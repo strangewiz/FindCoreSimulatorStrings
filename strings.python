@@ -1,0 +1,26 @@
+#!/usr/bin/python3
+
+import os
+import subprocess
+import sys
+
+# traverse root directory, and list directories as dirs and files as files
+root_dir = "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS.simruntime/Contents/Resources/RuntimeRoot/System/Library"
+#root_dir = "/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 12.4.simruntime/Contents/Resources/RuntimeRoot/Developer/Library/"
+#root_dir = "/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 13.5.simruntime/Contents/Resources/RuntimeRoot/"
+for root, dirs, files in os.walk(root_dir):
+    for file in files:
+        #if file.endswith(("Kit", "Service", "Services")):
+        # print (file)
+        abs_file = os.path.join(root, file)
+        if not file.endswith(("Plugin",".dat", ".idx", ".car", "strings", "caf", "png")) and os.stat(abs_file).st_size > 1000000:
+            p1 = subprocess.Popen(["file", abs_file], stdout=subprocess.PIPE)
+            p2 = subprocess.Popen(["grep", "x86_64"], stdin=p1.stdout, stdout=subprocess.PIPE)
+            out, err = p2.communicate()
+            if out != b'':
+                p1 = subprocess.Popen(["strings", abs_file], stdout=subprocess.PIPE)
+                p2 = subprocess.Popen(["grep", "-i", sys.argv[1]], stdin=p1.stdout, stdout=subprocess.PIPE)
+                out, err = p2.communicate()
+                if out != b'':
+                    print(abs_file)
+                    print(str(out.decode('ascii')))
